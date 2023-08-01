@@ -29,6 +29,7 @@ bindkey '^[[H' beginning-of-line                  # home
 bindkey '^[[F' end-of-line                        # end
 bindkey '^[[Z' undo                               # shift + tab undo last action
 
+
 # enable completion features
 autoload -Uz compinit
 compinit -d ~/.cache/zcompdump
@@ -91,6 +92,22 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+
+function git_branch_name()
+{
+  branch=$(git symbolic-ref HEAD 2> /dev/null | awk 'BEGIN{FS="/"} {print $NF}')
+  if [[ $branch == "" ]];
+  then
+    :
+  else
+    echo '%F{171}('$branch$')%B%F{white} '
+  fi
+}
+
+# Enable substitution in the prompt.
+setopt prompt_subst
+
+
 configure_prompt() {
     prompt_symbol=㉿
     # prompt_symbol=@
@@ -110,6 +127,10 @@ configure_prompt() {
             PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{red}%n@%m%b%F{reset}:%B%F{blue}%~%b%F{reset}%(#.#.$) '
             RPROMPT=
             ;;
+	custom)
+	    PROMPT=$'%B%F{white}%B%F{%(#.red.33)}%n'$prompt_symbol$'%m%B%F{white}:%B%F{yellow}%~%B%F{white} $(git_branch_name)$ %b%F{reset}'
+            # RPROMPT='$(git_branch_name)'
+            ;;
     esac
     unset prompt_symbol
 }
@@ -117,7 +138,7 @@ configure_prompt() {
 # The following block is surrounded by two delimiters.
 # These delimiters must not be modified. Thanks.
 # START KALI CONFIG VARIABLES
-PROMPT_ALTERNATIVE=twoline
+PROMPT_ALTERNATIVE=custom
 NEWLINE_BEFORE_PROMPT=no
 # STOP KALI CONFIG VARIABLES
 
@@ -172,7 +193,7 @@ if [ "$color_prompt" = yes ]; then
         ZSH_HIGHLIGHT_STYLES[bracket-level-4]=fg=yellow,bold
         ZSH_HIGHLIGHT_STYLES[bracket-level-5]=fg=cyan,bold
         ZSH_HIGHLIGHT_STYLES[cursor-matchingbracket]=standout
-    fi
+   fi
 else
     PROMPT='${debian_chroot:+($debian_chroot)}%n@%m:%~%(#.#.$) '
 fi
